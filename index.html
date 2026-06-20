@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Month at a Glance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Month at a Glance</p>
+      <h1>Build a clean monthly schedule and share it in one link.</h1>
+    </div>
+    <div class="header-actions">
+      <button class="ghost-button" id="printButton" type="button">Print</button>
+      <button class="primary-button" id="shareButton" type="button">Copy share link</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="planner-panel" aria-label="Schedule setup">
+      <div class="field-row">
+        <label for="scheduleTitle">Schedule name</label>
+        <input id="scheduleTitle" type="text" placeholder="June work schedule">
+      </div>
+
+      <div class="field-grid">
+        <div class="field-row">
+          <label for="monthSelect">Month</label>
+          <select id="monthSelect"></select>
+        </div>
+        <div class="field-row">
+          <label for="yearInput">Year</label>
+          <input id="yearInput" type="number" min="1900" max="2200">
+        </div>
+      </div>
+
+      <div class="summary-strip" aria-live="polite">
+        <span id="eventCount">0 scheduled items</span>
+        <span id="monthSummary">Ready to plan</span>
+      </div>
+
+      <div class="share-box" id="shareBox" hidden>
+        <p id="shareStatus">Share link copied.</p>
+        <input id="shareUrl" type="text" readonly aria-label="Shareable schedule link">
+      </div>
+    </section>
+
+    <section class="calendar-area" aria-label="Monthly calendar">
+      <div class="calendar-toolbar">
+        <button class="icon-button" id="previousMonth" type="button" aria-label="Previous month">&lsaquo;</button>
+        <h2 id="calendarHeading">Monthly schedule</h2>
+        <button class="icon-button" id="nextMonth" type="button" aria-label="Next month">&rsaquo;</button>
+      </div>
+      <div class="weekday-row" aria-hidden="true">
+        <span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </section>
+
+    <aside class="details-panel" aria-label="Day details">
+      <div class="selected-day">
+        <p class="eyebrow">Selected day</p>
+        <h2 id="selectedDateLabel">Choose a day</h2>
+      </div>
+
+      <form class="event-form" id="eventForm">
+        <input type="hidden" id="editingEventId">
+        <div class="field-row">
+          <label for="eventTitle">What is happening?</label>
+          <input id="eventTitle" type="text" placeholder="Team check-in" required>
+        </div>
+        <div class="field-grid">
+          <div class="field-row">
+            <label for="eventStart">Start</label>
+            <input id="eventStart" type="time">
+          </div>
+          <div class="field-row">
+            <label for="eventEnd">End</label>
+            <input id="eventEnd" type="time">
+          </div>
+        </div>
+        <div class="field-row">
+          <label for="eventType">Type</label>
+          <select id="eventType">
+            <option value="work">Work</option>
+            <option value="personal">Personal</option>
+            <option value="appointment">Appointment</option>
+            <option value="family">Family</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label for="eventNote">Notes</label>
+          <textarea id="eventNote" rows="3" placeholder="Optional details for anyone viewing the schedule"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="primary-button" type="submit" id="saveEvent">Add item</button>
+          <button class="ghost-button" type="button" id="clearForm">Clear</button>
+        </div>
+      </form>
+
+      <div class="day-events">
+        <div class="section-heading">
+          <h3>Items for this day</h3>
+          <button class="text-button" id="clearDay" type="button">Clear day</button>
+        </div>
+        <div id="eventList" class="event-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <template id="eventTemplate">
+    <article class="event-card">
+      <div>
+        <p class="event-time"></p>
+        <h4></h4>
+        <p class="event-note"></p>
+      </div>
+      <div class="event-actions">
+        <button class="text-button edit-event" type="button">Edit</button>
+        <button class="text-button delete-event" type="button">Delete</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
