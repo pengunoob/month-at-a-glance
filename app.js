@@ -50,6 +50,9 @@ const clearForm = document.querySelector("#clearForm");
 const clearDay = document.querySelector("#clearDay");
 const eventList = document.querySelector("#eventList");
 const eventTemplate = document.querySelector("#eventTemplate");
+const readonlyNotice = document.querySelector("#readonlyNotice");
+
+let isReadOnly = false;
 
 const today = new Date();
 
@@ -83,7 +86,7 @@ function loadInitialState() {
   const sharedState = readSharedState();
 
   if (sharedState) {
-    localStorage.setItem(storageKey, JSON.stringify(sharedState));
+    isReadOnly = true;
     return sharedState;
   }
 
@@ -163,17 +166,29 @@ function normalizeEvents(events) {
 
 function bindEvents() {
   scheduleTitle.addEventListener("input", () => {
+    if (isReadOnly) {
+      return;
+    }
+
     state.title = scheduleTitle.value;
     persistAndRender();
   });
 
   monthSelect.addEventListener("change", () => {
+    if (isReadOnly) {
+      return;
+    }
+
     state.month = Number(monthSelect.value);
     state.selectedDate = getSafeSelectedDate();
     persistAndRender();
   });
 
   yearInput.addEventListener("change", () => {
+    if (isReadOnly) {
+      return;
+    }
+
     state.year = clamp(Number(yearInput.value), 1900, 2200, today.getFullYear());
     state.selectedDate = getSafeSelectedDate();
     persistAndRender();
@@ -200,9 +215,23 @@ function syncControls() {
 
 function render() {
   syncControls();
+  renderMode();
   renderCalendar();
   renderDayDetails();
   renderSummary();
+}
+
+function renderMode() {
+  document.body.classList.toggle("is-read-only", isReadOnly);
+  readonlyNotice.hidden = !isReadOnly;
+  eventForm.hidden = isReadOnly;
+  clearDay.hidden = isReadOnly;
+  scheduleTitle.disabled = isReadOnly;
+  monthSelect.disabled = isReadOnly;
+  yearInput.disabled = isReadOnly;
+  previousMonth.disabled = isReadOnly;
+  nextMonth.disabled = isReadOnly;
+  shareButton.textContent = isReadOnly ? "Copy link" : "Copy share link";
 }
 
 function renderCalendar() {
@@ -261,9 +290,19 @@ function renderCalendar() {
     }
 
     cell.addEventListener("click", () => {
+      if (isReadOnly && !isCurrentMonth) {
+        return;
+      }
+
+      state.selectedDate = dateKey;
+
+      if (isReadOnly) {
+        render();
+        return;
+      }
+
       state.month = cellDate.getMonth();
       state.year = cellDate.getFullYear();
-      state.selectedDate = dateKey;
       resetForm();
       persistAndRender();
     });
@@ -289,12 +328,12 @@ function renderDayDetails() {
   const events = getSelectedDayEvents();
   selectedDateLabel.textContent = formatLongDate(selectedDate);
   eventList.innerHTML = "";
-  clearDay.disabled = events.length === 0;
+  clearDay.disabled = isReadOnly || events.length === 0;
 
   if (!events.length) {
     const emptyState = document.createElement("p");
     emptyState.className = "empty-state";
-    emptyState.textContent = "No items yet. Add one above when you are ready.";
+    emptyState.textContent = isReadOnly ? "No items scheduled for this day." : "No items yet. Add one above when you are ready.";
     eventList.append(emptyState);
     return;
   }
@@ -306,8 +345,15 @@ function renderDayDetails() {
     card.querySelector("h4").textContent = event.title;
     card.querySelector(".event-note").textContent = event.note;
     card.querySelector(".event-note").hidden = !event.note;
-    card.querySelector(".edit-event").addEventListener("click", () => editEvent(event.id));
-    card.querySelector(".delete-event").addEventListener("click", () => deleteEvent(event.id));
+
+    const eventActions = card.querySelector(".event-actions");
+    eventActions.hidden = isReadOnly;
+
+    if (!isReadOnly) {
+      card.querySelector(".edit-event").addEventListener("click", () => editEvent(event.id));
+      card.querySelector(".delete-event").addEventListener("click", () => deleteEvent(event.id));
+    }
+
     eventList.append(card);
   });
 }
@@ -325,6 +371,10 @@ function renderSummary() {
 }
 
 function saveSelectedEvent() {
+  if (isReadOnly) {
+    return;
+  }
+
   const title = eventTitle.value.trim();
 
   if (!title) {
@@ -355,6 +405,10 @@ function saveSelectedEvent() {
 }
 
 function editEvent(eventId) {
+  if (isReadOnly) {
+    return;
+  }
+
   const event = getSelectedDayEvents().find((dayEvent) => dayEvent.id === eventId);
 
   if (!event) {
@@ -372,6 +426,10 @@ function editEvent(eventId) {
 }
 
 function deleteEvent(eventId) {
+  if (isReadOnly) {
+    return;
+  }
+
   const nextEvents = getSelectedDayEvents().filter((event) => event.id !== eventId);
 
   if (nextEvents.length) {
@@ -385,7 +443,7 @@ function deleteEvent(eventId) {
 }
 
 function clearSelectedDay() {
-  if (!getSelectedDayEvents().length) {
+  if (isReadOnly || !getSelectedDayEvents().length) {
     return;
   }
 
@@ -402,6 +460,10 @@ function resetForm() {
 }
 
 function moveMonth(direction) {
+  if (isReadOnly) {
+    return;
+  }
+
   const nextDate = new Date(state.year, state.month + direction, 1);
   state.month = nextDate.getMonth();
   state.year = nextDate.getFullYear();
@@ -434,7 +496,10 @@ function buildShareUrl() {
 }
 
 function persistAndRender() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
+  if (!isReadOnly) {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+
   render();
 }
 

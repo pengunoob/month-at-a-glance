@@ -372,6 +372,26 @@ textarea:focus {
   font-size: 1.35rem;
 }
 
+.readonly-note {
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  padding: 14px;
+}
+
+.readonly-note h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.readonly-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .event-form {
   padding-bottom: 18px;
   border-bottom: 1px solid var(--line);
